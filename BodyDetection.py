@@ -2,6 +2,7 @@ import os
 import sys
 import cv2
 import mediapipe as mp
+import matplotlib.pyplot as plt 
 import time 
 
 BaseOptions           = mp.tasks.BaseOptions
@@ -26,13 +27,17 @@ POSE_CONNECTIONS = [
     (11, 23), (12 ,24), (23, 24),
 
     #Left leg
-    (23, 25), (25, 27),
+    (23, 25), (25, 27), (27, 29),
 
     #Right Leg
-    (24, 26), (26, 28),
+    (24, 26), (26, 28), (28, 30)
 ]
 
-
+def PosePrint(message ,current_ms, state, interval_ms=1000):
+    if message != state["last_messgae"] or (current_ms - state["last_print_ms"]) > interval_ms:
+       print(message)
+       state["last_message"] = message
+       state["last_print_ms"] = current_ms 
 
 
 
@@ -58,8 +63,11 @@ def find_body():
     running_mode=VisionRunningMode.VIDEO)
 
     stream = cv2.VideoCapture(0)
+    windowName = "Workout Tracker"
+    cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
     #Track the start of the wrokout 
-    start_time = time.time();
+    start_time = time.time()
+    gesture_state = {"last_message": None, "last_print_ms": 0}
 
     with PoseLandmarker.create_from_options(options) as landmarker:
 
@@ -71,16 +79,38 @@ def find_body():
                 print("Unable to capture video")
                 break
 
-            rgb = cv2.cvtColor(frame, cv2.color_BGR2RGB)
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
-            timeStamp_ms = int(time.time() - start_time) * 100
+            timeStamp_ms = int((time.time() - start_time) * 1000)
 
-            result = landmarker.detect_for_video(mp.image, timeStamp_ms)
+            result = landmarker.detect_for_video(mp_image, timeStamp_ms)
 
-            cv2.imshow("Body Tracker", frame)
+            if result.pose_landmarks:
+                for bodylms in result.pose_landmarks:
+                    mp_draw_lm(frame, bodylms)
 
+                    Left_Shoulder = bodylms[11]
+                    Left_Elbow = bodylms[13]
+                    Left_Wrist = bodylms[15]
+                    Left_Hip = bodylms[23]
+                    Left_Knee = bodylms[25]
+                    Left_Ankle = bodylms[27]
+                    Left_Heel = bodylms[29]
+                    Right_Shoulder = bodylms[12]
+                    Right_Elbow = bodylms[14]
+                    Right_Wrist = bodylms[16]
+                    Right_Hip = bodylms[24]
+                    Right_Knee = bodylms[26]
+                    Right_Ankle = bodylms[28]
+                    Right_Heel = bodylms[30]
 
+                    if (Left_Shoulder.y > Left_Knee.y):
+                        PosePrint("Good Start", timeStamp_ms, gesture_state)
+            cv2.imshow(windowName, frame)
     stream.release()
-    cv2.destroyAllWindows
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    find_body()
