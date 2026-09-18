@@ -1,6 +1,7 @@
 import os 
 import sys
 import cv2
+import numpy as np
 import mediapipe as mp
 import matplotlib.pyplot as plt 
 import time 
@@ -34,12 +35,33 @@ POSE_CONNECTIONS = [
 ]
 
 def PosePrint(message ,current_ms, state, interval_ms=1000):
-    if message != state["last_messgae"] or (current_ms - state["last_print_ms"]) > interval_ms:
+    if message != state["last_message"] or (current_ms - state["last_print_ms"]) > interval_ms:
        print(message)
        state["last_message"] = message
        state["last_print_ms"] = current_ms 
 
+def lighting_Report(frame, landmarks=None):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    h, w = gray.shape
+    lines = [
+        f"Brightness: {gray.mean():.0f} (aim ~90-170)",
+        f"Contrast: {gray.std():.0f} (aim > 40)",
+        f"Crushed: {(gray < 25).mean()*100:.0f}% lown: {(gray > 230).mean()*100:.0f}%",
+    ]
 
+    if landmarks:
+        xs = [int(l.x * w) for l in landmarks]
+        ys = [int(l.y * h) for l in landmarks]
+        x0, x1 = max(min(xs), 0), min(max(xs), w)
+        y0, y1 = max(min(ys), 0), min(max(ys), h)
+        if x1 > x0 and y1 > y0:
+            mask = np.zeros_like(gray, dtype=bool)
+            mask[y0:y1, x0:x1] = True
+            body, bg = gray[mask].mean(), gray[~mask].mean()
+            lines.append(f"Body vs BG: {body:.0f} / {bg:.0f}")
+
+    for i, text in enumerate(lines):
+        cv2.putText(frame, text, (10, 25 + i * 22), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 0), 1)
 
 # media pipe landmarks are drawn on the body 
 def mp_draw_lm(frame, landmarks):
@@ -108,6 +130,7 @@ def find_body():
 
                     if (Left_Shoulder.y > Left_Knee.y):
                         PosePrint("Good Start", timeStamp_ms, gesture_state)
+            lighting_Report(frame)
             cv2.imshow(windowName, frame)
     stream.release()
     cv2.destroyAllWindows()
