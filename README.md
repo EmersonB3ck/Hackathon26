@@ -1,4 +1,4 @@
-# Exercise Routine Evaluator
+# S.P.O.T
 
 Real-time exercise form tracking and feedback using computer vision.
 
@@ -6,7 +6,7 @@ Real-time exercise form tracking and feedback using computer vision.
 
 ## Overview
 
-Exercise Routine Evaluator is a fitness assistance tool developed for a hackathon that analyzes workout form in real time using computer vision. The system monitors body landmarks to evaluate movement execution and prevent injury.
+S.P.O.T is a fitness assistance tool developed for a hackathon that analyzes workout form in real time using computer vision. The system monitors body landmarks to evaluate movement execution and prevent injury.
 
 **Supported Exercises:**
 * Squat

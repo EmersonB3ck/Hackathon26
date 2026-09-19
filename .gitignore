@@ -1,3 +1,7 @@
 pose_landmarker_lite.task
 hand_landmarker.task
 /test-stash/
+__pycache__/
+*.pyc
+*.pyo
+.env
