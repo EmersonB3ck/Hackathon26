@@ -15,6 +15,22 @@ class Squat:
         self.resting = False
         self.Rtimer = RestTimer(rest_seconds)
         self.complete = False
+        self.current_angle = None
+
+    def get_angle(self, landmarks, w , h):
+        if self.current_angle is None:
+            return None
+        KLm = landmarks[25]
+        return(f"{self.current_angle:.0f}", int(KLm.x * w), int(KLm.y * h))
+
+    def get_WorkoutInfo(self, timestamp_ms):
+        if self.resting:
+            secs = self.Rtimer.remaining_seconds(timestamp_ms)
+            mins, s = divmod(secs, 60)
+            return [f"BREAK: {mins}:{s:02d}", "Press 'b' to skip water break"]
+        angle_text = f"Angle: {self.current_angle:.0f}" if self.current_angle is not None else "Angle: --"
+        return [f"Squats: {self.rep_count}/{self.reps}", f"Sets: {self.set_count}/{self.sets}", angle_text ]
+
 
     def process(self, landmarks, timestamp_ms, key=None):
         if self.complete:
@@ -40,6 +56,7 @@ class Squat:
         # calculate the angle between 3 landmarks
         # The knee is the vertex between the Hip and the Ankle 
         angle = angle_Calculator(Left_Hip, Left_Knee, Left_Ankle)
+        self.current_angle = angle
 
         message = None
 

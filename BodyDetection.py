@@ -132,9 +132,17 @@ def find_body(exercise_tracker):
                     mp_draw_lm(frame, bodylms)
                     message = exercise_tracker.process(bodylms, timeStamp_ms)
                     if message:
-                        print(message)
+                        print(message, flush=True)
+
+                    angle_info = exercise_tracker.get_angle(bodylms, frame.shape[1], frame.shape[0])
+                    if angle_info:
+                        text, x, y = angle_info
+                        cv2.putText(frame, text, (x + 15, y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+
+            for i, line in enumerate(exercise_tracker.get_WorkoutInfo(timeStamp_ms)):
+                cv2.putText(frame, line, (10, 25 + i * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
             # get lighting level
-            lighting_Report(frame)
+            #lighting_Report(frame)
             # display window
             cv2.imshow(windowName, frame)
 
