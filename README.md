@@ -20,8 +20,8 @@ Hackathon26 is a fitness assistance tool developed for a hackathon that analyzes
 ## Tech Stack
 
 * **Language:** Python
-* **Computer Vision:** OpenCV[cite: 1]
-* **Pose Estimation:** MediaPipe[cite: 1]
+* **Computer Vision:** OpenCV
+* **Pose Estimation:** MediaPipe
 
 ---
 
