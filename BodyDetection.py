@@ -42,13 +42,7 @@ app = Flask(__name__)
 
 # Shared state: the worker writes the newest JPEG, viewers just read it.
 latest_jpeg = None
-cond = threading.Condition()
-
-def PosePrint(message ,current_ms, state, interval_ms=1000):
-    if message != state["last_message"] or (current_ms - state["last_print_ms"]) > interval_ms:
-       print(message)
-       state["last_message"] = message
-       state["last_print_ms"] = current_ms 
+cond = threading.Condition() 
 
 def lighting_Report(frame, landmarks=None):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -139,11 +133,14 @@ def find_body(exercise_tracker):
             # Runs the pose detection 
             result = landmarker.detect_for_video(mp_image, timeStamp_ms)
 
+            
+
             if result.pose_landmarks:
                 for bodylms in result.pose_landmarks:
                     mp_draw_lm(frame, bodylms)
                     message = exercise_tracker.process(bodylms, timeStamp_ms)
-                    PosePrint(message, timeStamp_ms, gesture_state)
+                    if message:
+                        print(message)
             # get lighting level
             lighting_Report(frame)
             # display window
