@@ -1,54 +1,40 @@
 import time
 import cv2
 import mediapipe as mp
+from BodyDetection import angle_Calculator
+class Squat:
+    def __init__(self, reps, sets):
+        # initialize a squat 
+        self.reps = reps
+        self.sets = sets
+        self.rep_count = 0
+        self.set_count = 0
+        self.stage = "Upright"
 
-BaseOptions = mp.tasks.BaseOptions
-PoseLandmarker = mp.tasks.vision.PoseLandmarker
-PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-VisionRunningMode = mp.tasks.vision.RunningMode
+    def process(self, landmarks, timestamp_ms):
+        # get all the landmarks needed for a squat 
+        Left_Shoulder = landmarks[11]
+        Right_Shoulder = landmarks[12]
+        Left_Hip = landmarks[23]
+        Right_Hip = landmarks[24]
+        Left_Knee = landmarks[25]
+        Right_Knee = landmarks[26]
+        Left_Ankle = landmarks[27]
+        Right_Ankle = landmarks[28]
 
-model_path = 'Hackathon26/Workouts/pose_landmarker_lite.task'
+        # calculate the angle between 3 landmarks
+        # The knee is the vertex between the Hip and the Ankle 
+        angle = angle_Calculator(Left_Hip, Left_Knee, Left_Ankle)
 
-shoulder_y = 0
-knee_y = 0
-
-# Runs on MediaPipe's own thread each time a frame finishes processing
-def on_result(result, output_image, timestamp_ms):
-    global shoulder_y, knee_y
-    if not result.pose_landmarks:
-        return
-    lms = result.pose_landmarks[0]          # first person detected
-    shoulder_y = (lms[11].y + lms[12].y) / 2   # avg of left/right shoulder
-    knee_y = (lms[25].y + lms[26].y) / 2       # avg of left/right knee
-
-def squat():
-    options = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=model_path),
-        running_mode=VisionRunningMode.LIVE_STREAM,
-        result_callback=on_result)
-
-    cap = cv2.VideoCapture(0)
-    start = time.time()
-
-    with PoseLandmarker.create_from_options(options) as landmarker:
-        while cv2.waitKey(1) != 27:  # Esc to quit
-            ok, frame = cap.read()
-            if not ok:
-                break
-
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-            landmarker.detect_async(mp_image, int((time.time() - start) * 1000))
-
-            # Draw the values on the video frame
-            cv2.putText(frame, f"Shoulder Y: {shoulder_y:.3f}", (10, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-            cv2.putText(frame, f"Knee Y: {knee_y:.3f}", (10, 65),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-            cv2.imshow("Squat", frame)
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    squat()
+        # if the angle of your hips and ankles are less than 100 
+        # set the state to be down
+        if angle < 100 and self.stage == "Upright":
+            self.stage = "Down"
+        # if your marked as being down and your angle is greater than 160(standing up)
+        elif angle > 160 and self.stage == "Down":
+            self.stage = "Upright"
+            self.rep_count += 1
+            if self.rep_count >= self.reps:
+                self.rep_count = 0
+                self.set_count += 1
+        return f"Squats: Rep: {self.rep_count}/{self.reps} | Set: {self.set_count}/{self.sets}"

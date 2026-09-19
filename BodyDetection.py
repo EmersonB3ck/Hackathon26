@@ -89,19 +89,38 @@ def mp_draw_lm(frame, landmarks):
         # Draw the landmark point
         cv2.circle(frame, (int(lm.x * w), int(lm.y * h)), 5, (0, 0, 255), -1)
 
+def confidence_check(landmarks, threshold=0.6):
+    return landmarks.visibility > threshold and landmarks.presence > threshold 
 
-def find_body():
+
+def angle_Calculator(lm1, lmV, lm2):
+    lm1 = np.array([lm1.x, lm1.y])
+    lmV = np.array([lmV.x, lmV.y])
+    lm2 = np.array([lm2.x, lm2.y])
+
+    radians = np.arctan2(lm2[1] - lmV[1], lm2[0] - lmV[0]) - np.arctan2(lm1[1] - lmV[1], lm1[0]-lmV[0]) 
+    angle = np.abs(radians*180.0/np.pi)
+
+    if angle > 180.0:
+        angle = 360 - angle
+    return angle
+
+def find_body(exercise_tracker):
     global latest_jpeg
+    #Set the settings of mediapipe
     options = PoseLandmarkerOptions(base_options=BaseOptions(model_asset_path='pose_landmarker_lite.task'),
     running_mode=VisionRunningMode.VIDEO)
-    
+    #open a videoStream
     stream = cv2.VideoCapture(0)
     windowName = "Workout Tracker"
+    #name the window 
     cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
     #Track the start of the wrokout 
     start_time = time.time()
+    # gesture state is for help printing
     gesture_state = {"last_message": None, "last_print_ms": 0}
 
+    #create the detection instance 
     with PoseLandmarker.create_from_options(options) as landmarker:
 
         #while user hasnt clickes "esc" keep tracking 
@@ -111,37 +130,23 @@ def find_body():
             if not has_frame:
                 print("Unable to capture video")
                 break
-
+            #change from BGR to RGB
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-
+            # THe time that has lapsed since the start
             timeStamp_ms = int((time.time() - start_time) * 1000)
-
+            # Runs the pose detection 
             result = landmarker.detect_for_video(mp_image, timeStamp_ms)
 
             if result.pose_landmarks:
                 for bodylms in result.pose_landmarks:
                     mp_draw_lm(frame, bodylms)
-
-                    Left_Shoulder = bodylms[11]
-                    Left_Elbow = bodylms[13]
-                    Left_Wrist = bodylms[15]
-                    Left_Hip = bodylms[23]
-                    Left_Knee = bodylms[25]
-                    Left_Ankle = bodylms[27]
-                    Left_Heel = bodylms[29]
-                    Right_Shoulder = bodylms[12]
-                    Right_Elbow = bodylms[14]
-                    Right_Wrist = bodylms[16]
-                    Right_Hip = bodylms[24]
-                    Right_Knee = bodylms[26]
-                    Right_Ankle = bodylms[28]
-                    Right_Heel = bodylms[30]
-
-                    if (Left_Shoulder.y > Left_Knee.y):
-                        PosePrint("Good Start", timeStamp_ms, gesture_state)
+                    message = exercise_tracker.process(bodylms, timeStamp_ms)
+                    PosePrint(message, timeStamp_ms, gesture_state)
+            # get lighting level
             lighting_Report(frame)
+            # display window
             cv2.imshow(windowName, frame)
 
             ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
@@ -150,7 +155,9 @@ def find_body():
             with cond:
                 latest_jpeg = buf.tobytes()
                 cond.notify_all()
+    # release the stream
     stream.release()
+    # destroy all windows created
     cv2.destroyAllWindows()
 
 def stream():
@@ -172,7 +179,3 @@ def index():
 @app.route("/video")
 def video():
     return Response(stream(), mimetype="multipart/x-mixed-replace; boundary=frame")
-
-if __name__ == "__main__":
-    threading.Thread(target=find_body, daemon=True).start()
-    app.run(host="0.0.0.0", port=5000, threaded=True, debug=False)
