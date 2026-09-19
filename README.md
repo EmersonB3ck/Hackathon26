@@ -1,4 +1,4 @@
-# Hackathon26
+# Exercise Routine Evaluator
 
 Real-time exercise form tracking and feedback using computer vision.
 
@@ -6,14 +6,14 @@ Real-time exercise form tracking and feedback using computer vision.
 
 ## Overview
 
-Hackathon26 is a fitness assistance tool developed for a hackathon that analyzes workout form in real time using computer vision. The system monitors body landmarks to evaluate movement execution and prevent injury.
+Exercise Routine Evaluator is a fitness assistance tool developed for a hackathon that analyzes workout form in real time using computer vision. The system monitors body landmarks to evaluate movement execution and prevent injury.
 
 **Supported Exercises:**
-* [Exercise 1]
-* [Exercise 2]
-* [Exercise 3]
-* [Exercise 4]
-* [Exercise 5]
+* Squat
+* Bench Press
+* Push Up
+* Curl
+* Lunge
 
 ---
 
@@ -22,6 +22,8 @@ Hackathon26 is a fitness assistance tool developed for a hackathon that analyzes
 * **Language:** Python
 * **Computer Vision:** OpenCV
 * **Pose Estimation:** MediaPipe
+* **Form_Evaluation:** Numpy
+* **Development Server:** Flask
 
 ---
 
@@ -36,7 +38,7 @@ Hackathon26 is a fitness assistance tool developed for a hackathon that analyzes
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/](https://github.com/)<your-username>/Hackathon26.git
+   git clone [https://github.com/](https://github.com/)EmersonB3ck/Hackathon26.git
    cd Hackathon26
    ```
 2. Create and activate a virtual environment:
