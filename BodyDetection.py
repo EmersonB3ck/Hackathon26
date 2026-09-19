@@ -5,8 +5,6 @@ import numpy as np
 import mediapipe as mp
 import matplotlib.pyplot as plt 
 import time 
-import threading
-from flask import Flask, Response
 
 BaseOptions           = mp.tasks.BaseOptions
 # HandLandmarker is the main class for hand tracking in mediapipe tasks 
@@ -36,13 +34,7 @@ POSE_CONNECTIONS = [
     (24, 26), (26, 28), (28, 30)
 ]
 
-JPEG_QUALITY = 70
-
-app = Flask(__name__)
-
 # Shared state: the worker writes the newest JPEG, viewers just read it.
-latest_jpeg = None
-cond = threading.Condition() 
 
 def lighting_Report(frame, landmarks=None):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -118,7 +110,7 @@ def find_body(exercise_tracker):
     with PoseLandmarker.create_from_options(options) as landmarker:
 
         #while user hasnt clickes "esc" keep tracking 
-        while cv2.waitKey(1) != 27:
+        while cv2.waitKey(1) != 27 and not exercise_tracker.complete:
             has_frame, frame = stream.read()
 
             if not has_frame:
@@ -133,7 +125,7 @@ def find_body(exercise_tracker):
             # Runs the pose detection 
             result = landmarker.detect_for_video(mp_image, timeStamp_ms)
 
-            
+
 
             if result.pose_landmarks:
                 for bodylms in result.pose_landmarks:
@@ -146,33 +138,8 @@ def find_body(exercise_tracker):
             # display window
             cv2.imshow(windowName, frame)
 
-            ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
-            if not ok:
-                continue
-            with cond:
-                latest_jpeg = buf.tobytes()
-                cond.notify_all()
+           
     # release the stream
     stream.release()
     # destroy all windows created
     cv2.destroyAllWindows()
-
-def stream():
-    """One of these runs per viewer; it only forwards the newest frame."""
-    last = None
-    while True:
-        with cond:
-            cond.wait_for(lambda: latest_jpeg is not last, timeout=5)
-            jpeg = latest_jpeg
-        if jpeg is None or jpeg is last:
-            continue
-        last = jpeg
-        yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg + b"\r\n"
-
-@app.route("/")
-def index():
-    return '<img src="/video" style="width:100%">'
-
-@app.route("/video")
-def video():
-    return Response(stream(), mimetype="multipart/x-mixed-replace; boundary=frame")

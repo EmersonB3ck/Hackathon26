@@ -65,5 +65,5 @@ class Squat:
                 else:
                     self.resting = True
                     self.Rtimer.start(timestamp_ms)
-                message = f" Sets: {self.set_count}/{self.sets} complete - resting"
+                    message = f" Sets: {self.set_count}/{self.sets} complete - resting"
         return message
