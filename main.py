@@ -4,10 +4,11 @@ from Workouts.Squat import Squat
 from Workouts.Curl import Curl
 from Workouts.Bench import Bench
 from Workouts.PushUp import PushUp
+from Workouts.Lunge import Lunge
 from voice import generate_audio, speak
 init()
 # all exercises we have 
-EXERCISES = { "squat" : Squat, "bench" : Bench, "pushup" : PushUp, "curl" : Curl}
+EXERCISES = { "squat" : Squat, "bench" : Bench, "pushup" : PushUp, "curl" : Curl, "lunge" : Lunge}
 
 def workout_session():
     while True:

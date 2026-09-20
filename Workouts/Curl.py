@@ -39,7 +39,7 @@ class Curl:
             mins, s = divmod(secs, 60)
             return [f"BREAK: {mins}:{s:02d}", "Press 'b' to skip water break"]
         angle_text = f"Angle: {self.current_angle:.0f}" if self.current_angle is not None else "Angle: --"
-        return [f"Squats: {self.rep_count}/{self.reps}", f"Sets: {self.set_count}/{self.sets}", angle_text ]
+        return [f"Curls: {self.rep_count}/{self.reps}", f"Sets: {self.set_count}/{self.sets}", angle_text]
 
 
     # called once per frame for find_body to deal with all the curl logic 
