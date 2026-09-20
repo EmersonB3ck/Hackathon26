@@ -9,28 +9,28 @@ EXERCISES = { "squat" : Squat}
 def workout_session():
     while True:
     # ask the user 
-        speak("Pick a workout from the list: " + ", ".join(EXERCISES.keys()))
+        #speak("Pick a workout from the list: " + ", ".join(EXERCISES.keys()))
         print("\033[1mPick a workout from the list:\033[0m", ",".join(EXERCISES.keys()))
-        speak("Which exercise?: ")
+        #speak("Which exercise?: ")
         chosen = input("Which exercise?: ").strip().lower()
 
         while chosen not in EXERCISES:
             chosen = input(f"'{chosen}' is not on the wrokout list. Please select a new workout").strip().lower()
 
-        speak("Number of reps per set?: ")
+        #speak("Number of reps per set?: ")
         reps = int(input("# of reps per set: "))
-        speak("Number of sets?: ")
+        #speak("Number of sets?: ")
         sets = int(input("Number of sets: "))
-        speak("How many seconds of rest between sets (120s = 2mins)?: ")
+        #speak("How many seconds of rest between sets (120s = 2mins)?: ")
         rest_time = input("How many seconds of rest between sets (120s = 2mins)?: ").strip()
         rest = int(rest_time) if rest_time else 120
         tracker = EXERCISES[chosen](reps, sets, rest)
         find_body(tracker)
 
-        speak("Pick another workout? (y/n): ")
+        #speak("Pick another workout? (y/n): ")
         again = input("Pick another workout? (y/n): ").strip().lower()
         if again != "y":
-            speak("Great Workout ")
+            #speak("Great Workout ")
             print("Great Workout ")
             break
 

@@ -75,7 +75,7 @@ def mp_draw_lm(frame, landmarks):
         # Draw the landmark point
         cv2.circle(frame, (int(lm.x * w), int(lm.y * h)), 5, (0, 0, 255), -1)
 
-def confidence_check(landmarks, threshold=0.6):
+def confidence_check(landmarks, threshold=0.8):
     return landmarks.visibility > threshold and landmarks.presence > threshold 
 
 
@@ -108,11 +108,13 @@ def find_body(exercise_tracker):
 
     #create the detection instance 
     with PoseLandmarker.create_from_options(options) as landmarker:
+        while not exercise_tracker.complete:
+            key = cv2.waitKey(1) & 0xFF
+        #if user clickes "esc" break 
+            if key == 27:
+               break
 
-        #while user hasnt clickes "esc" keep tracking 
-        while cv2.waitKey(1) != 27 and not exercise_tracker.complete:
             has_frame, frame = stream.read()
-
             if not has_frame:
                 print("Unable to capture video")
                 break
@@ -130,7 +132,7 @@ def find_body(exercise_tracker):
             if result.pose_landmarks:
                 for bodylms in result.pose_landmarks:
                     mp_draw_lm(frame, bodylms)
-                    message = exercise_tracker.process(bodylms, timeStamp_ms)
+                    message = exercise_tracker.process(bodylms, timeStamp_ms, key)
                     if message:
                         print(message, flush=True)
 
