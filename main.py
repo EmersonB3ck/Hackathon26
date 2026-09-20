@@ -2,10 +2,12 @@ from colorama import init, Style
 from BodyDetection import find_body
 from Workouts.Squat import Squat
 from Workouts.Curl import Curl
+from Workouts.Bench import Bench
+from Workouts.PushUp import PushUp
 from voice import generate_audio, speak
 init()
 # all exercises we have 
-EXERCISES = { "squat" : Squat, "curl" : Curl}
+EXERCISES = { "squat" : Squat, "bench" : Bench, "pushup" : PushUp, "curl" : Curl}
 
 def workout_session():
     while True:
