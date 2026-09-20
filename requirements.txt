@@ -2,4 +2,4 @@ opencv-python
 mediapipe
 flask
 numpy
-matplotlib
+elevenlabs

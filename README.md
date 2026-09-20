@@ -23,7 +23,7 @@ S.P.O.T is a fitness assistance tool developed for a hackathon that analyzes wor
 * **Computer Vision:** OpenCV
 * **Pose Estimation:** MediaPipe
 * **Form_Evaluation:** Numpy
-* **Development Server:** Flask
+* **Voice Commands"** ElevenLabs
 
 ---
 
